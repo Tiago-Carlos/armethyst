@@ -119,7 +119,10 @@ int BasicCPU::ID()
 			return decodeDataProcImm();
 			break;
 		// case TODO
-		// x101 Data Processing -- Register on page C4-278
+		// x101 Data Processing -- Register on page C4-278 - (2 source)
+		case 0x0A000000: //0000 1010 0000 ...
+			return decodeDataProcReg();
+			break;
 		default:
 			return 1; // instrução não implementada
 	}
@@ -230,7 +233,65 @@ int BasicCPU::decodeDataProcReg() {
 	//				'add w1, w1, w0'
 	//		que aparece na linha 43 de isummation.S e no endereço 0x68
 	//		de txt_isummation.o.txt.
-	
+	unsigned int n, m, d;
+	int imm6, shift;
+
+	switch (IR & 0xFF20000)
+	{
+		//x000 1011 - ADD (Shifted Register) - c6-688
+		case 0x0B000000:
+			// sf = 1 (Variante de 64 bits) - não implementado
+			if (IR & 0x80000000) return 1;
+			
+			// sf = 0 -- 32-bit variant on page c6-688
+			// ADD <Wd>, <Wn>, <Wm>{, <shift> #amount}
+
+			// ler os registradores
+			shift = (IR & 0x00c00000);
+			m = (IR & 0x001F0000) >> 16;
+			imm6 = (IR & 0x0000FC00) >> 10;
+			n = (IR & 0x000003E0) >> 5;
+			d = (IR & 0x0000001F);
+
+			// Ler os valores dos registradores
+			A = getW(n);
+			B = getW(m) << imm6;
+
+			// TODO: Algo deve ser feito com o shift, segundo o livro:
+			/*
+			  <shift> is the optional shift type to be applied to the second source operand (B), defaulting to LSL.
+			  It can have the following values:
+			      LSL, when shift = 00
+				  LSR, when shift = 01
+				  ASR, when shift = 10
+			  the encoding shift = 11 is reserved.
+			*/
+			
+			// registrador destino
+			d = (IR & 0x0000001F);
+			if (d == 31) {
+				Rd = &SP;
+			} else {
+				Rd = &(R[d]);
+			}
+			
+			// atribuir ALUctrl
+			ALUctrl = ALUctrlFlag::ADD;
+			
+			// atribuir MEMctrl
+			MEMctrl = MEMctrlFlag::MEM_NONE;
+			
+			// atribuir WBctrl
+			WBctrl = WBctrlFlag::RegWrite;
+			
+			// atribuir MemtoReg
+			MemtoReg = false;
+			
+			return 0;
+		default:
+			// instrução não implementada
+			return 1;
+	}
 	
 	// instrução não implementada
 	return 1;
