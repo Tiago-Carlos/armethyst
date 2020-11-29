@@ -382,6 +382,9 @@ int BasicCPU::EXI()
 		case ALUctrlFlag::SUB:
 			ALUout = A - B;
 			return 0;
+		case ALUctrlFlag::ADD:
+			ALUout = A + B;
+			return 0;
 		default:
 			// Controle não implementado
 			return 1;
