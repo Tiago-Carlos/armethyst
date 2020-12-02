@@ -109,24 +109,26 @@ int BasicCPU::ID()
 	// operação inteira como padrão
 	fpOp = FPOpFlag::FP_UNDEF;
 
-	int group = IR & 0x1E000000; // bits 28-25	
+	int group = IR & 0x1E000000; // bits 28-25	0001 1110 0000
 	switch (group)
 	{
-		//100x Data Processing -- Immediate
+		// 100x Data Processing -- Immediate
 		case 0x10000000: // x = 0
 		case 0x12000000: // x = 1
 			return decodeDataProcImm();
 			break;
+
 		// x101 Data Processing -- Register on page C4-278
-		case 0x0A000000: 
-		case 0x1A000000:
+		case 0x0A000000: // x = 0
+		case 0x1A000000: // x = 1
 			return decodeDataProcReg();
 			break;
 		
-		// TODO
-		// implementar o GRUPO A SEGUIR
-		//
 		// x111 Data Processing -- Scalar Floating-Point and Advanced SIMD on page C4-288
+		case 0x0E000000: // x = 0
+		case 0x1E000000: // x = 1
+			return decodeDataProcFloat();
+			break;
 
 		
 		// ATIVIDADE FUTURA
@@ -134,7 +136,7 @@ int BasicCPU::ID()
 		//
 		// 101x Loads and Stores on page C4-237
 		// 101x Branches, Exception Generating and System instructions on page C4-237
-		
+			
 		default:
 			return 1; // instrução não implementada
 	}
@@ -347,6 +349,39 @@ int BasicCPU::decodeDataProcFloat() {
 			
 			return 0;
 
+		case 0x1E202800:
+			//C7.2.43 FADD (scalar) on page C7-1346
+			
+			// implementado apenas ftype='00'
+			if (IR & 0x00C00000) return 1;
+
+			fpOp = FPOpFlag::FP_REG_32;
+			
+			// ler A e B
+			n = (IR & 0x000003E0) >> 5;
+			A = getSasInt(n); // 32-bit variant
+
+			m = (IR & 0x001F0000) >> 16;
+			B = getSasInt(m);
+
+			// registrador destino
+			d = (IR & 0x0000001F);
+			Rd = &(V[d]);
+			
+			// atribuir ALUctrl
+			ALUctrl = ALUctrlFlag::ADD;
+			
+			// atribuir MEMctrl
+			MEMctrl = MEMctrlFlag::MEM_NONE;
+			
+			// atribuir WBctrl
+			WBctrl = WBctrlFlag::RegWrite;
+			
+			// atribuir MemtoReg
+			MemtoReg = false;
+			
+			return 0;
+
 		default:
 			// instrução não implementada
 			return 1;
@@ -424,6 +459,9 @@ int BasicCPU::EXF()
 		{
 			case ALUctrlFlag::SUB:
 				ALUout = Util::floatAsUint64Low(fA - fB);
+				return 0;
+			case ALUctrlFlag::ADD:
+				ALUout = Util::floatAsUint64Low(fA + fB);
 				return 0;
 			default:
 				// Controle não implementado

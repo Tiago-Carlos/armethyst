@@ -231,12 +231,12 @@ void test02(BasicCPUTest* cpu, BasicMemoryTest* memory, string fname)
 		
 
 	//
-	// Test FADD (linha 42)
+	// Test FADD (linha 58)
 	//
 	fpOp = true;
-	instruction = "fadd s0, s0, s0";
-	startAddress = 0x80; // endereço de 'fadd s0, s0, s0'
-	xpctdIR = 0x1E202800;
+	instruction = "fadd	s1, s1, s0";
+	startAddress = 0xBC; // endereço de 'fadd	s1, s1, s0'
+	xpctdIR = 0x1E202821;
 	xpctdA = Util::floatAsUint64Low(fA);	// valor arbitrário para s1
 	xpctdB = Util::floatAsUint64Low(fB); // valor arbitrário para s0
 	cpu->setS(1,fA); // temos que fazer s1 valer xpctdA
@@ -245,7 +245,7 @@ void test02(BasicCPUTest* cpu, BasicMemoryTest* memory, string fname)
 	xpctdMEMctrl = MEMctrlFlag::MEM_NONE;
 	xpctdWBctrl = WBctrlFlag::RegWrite;
 	
-	xpctdALUout = Util::doubleAsUint64(fA+fB);
+	xpctdALUout = Util::floatAsUint64Low(fA+fB);
 	
 	xpctdRd = xpctdALUout;
 	
@@ -448,8 +448,11 @@ void testID(BasicCPUTest* cpu,
 
 	// verifica leitura de registradores
 	cout << "ID() testing registers reading..." << endl << endl;
-	long A = cpu->getA();
-	long B = cpu->getB();
+	// O teste apontava dois valores iguais como diferentes no teste de FSUB, que já
+	// deveria estar implementado corretamente. Com a mudança dos tipos de A e B, de long
+	// para int o erro foi corrigido
+	int A = cpu->getA();
+	int B = cpu->getB();
 	cout << "	A=0x" << A << "; B=0x" << B << endl;
 	cout << "Expected: A=0x" << xpctdA << "; B=0x" << xpctdB << endl;
 	if ((A != xpctdA) || (B != xpctdB)){
