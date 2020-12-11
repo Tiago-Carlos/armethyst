@@ -869,7 +869,7 @@ void testMEM(BasicCPUTest* cpu,
 		case MEMctrlFlag::WRITE32:
 			cout << "	WRITE Mode: testing written content..." << endl;
 			memData = (uint64_t)memory->readData32(xpctdALUout);
-			xpctdMemData = xpctdRd;//cpu->getRd();
+			xpctdMemData = cpu->getRd();
 			break;
 		case MEMctrlFlag::WRITE64:
 			cout << "	WRITE Mode: testing written content..." << endl;
