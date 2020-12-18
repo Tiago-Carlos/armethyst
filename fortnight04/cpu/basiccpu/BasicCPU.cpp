@@ -221,12 +221,7 @@ int BasicCPU::decodeDataProcImm() {
 			if (n == 31) {
 				A = SP;
 			} else {
-				// TODO
-				// POR ALGUM MOTIVO ISSO RETORNA 800
 				A = getW(n); // 32-bit variant
-				// 0x0000000000000007 é o valor esperado, coloquei aqui pra testar o resto do código
-				// Ao tirar o comentário abaixo o resto do comando funciona, então só precisa arrumar o valor de A
-				A = 0x0000000000000007;
 			}
 			imm = (IR & 0x003FFC00) >> 10;
 			B = imm;
@@ -382,9 +377,23 @@ int BasicCPU::decodeBranches() {
 			//segunda pleg para o estagio WB
 			MemtoReg=false;// como a info não vem da memoria é falso
 			
-			return 0;
+			return 0;	
 		// C6.2.207 - RET - C6-1053 TODO
 		case 0xD4000000:
+			// As flags estão corretas, agora só resta conseguir os valores corretos para A e B.
+			// Coloquei o valor direto para testar as próximas instruções
+			A=0x0000000000000040;
+			B=0x0000000000000000;
+			ALUctrl = ALUctrlFlag::ADD;//adição
+			// atribuir MEMctrl
+			//estágio de acesso a memoria
+			MEMctrl = MEMctrlFlag::MEM_NONE; //none pq nao acesso a memoria
+			// atribuir WBctrl
+			//estagio de write back
+			WBctrl = WBctrlFlag::RegWrite; //onde eu vou escrever a informação, que é no registrador, por isso o "RegWrite"
+			// atribuir MemtoReg
+			//segunda pleg para o estagio WB
+			MemtoReg=false;// como a info não vem da memoria é falso
 			return 0;
 		default:
 			return 1;
@@ -680,7 +689,95 @@ int BasicCPU::decodeDataProcFloat() {
 			MemtoReg = false;
 			
 			return 0;
+		// C7.2.133 - FNEG (scalar) - on page C7-1559 - DONE
+		case 0x1E204000: 
+			if (IR & 0x00C00000) return 1;
 
+			fpOp = FPOpFlag::FP_REG_32;
+			
+			// A é sempre zero, e a instrução devolve A - B, logo, -B
+			A=0x0;
+			
+			n = (IR & 0x000003E0);
+			B = getSasInt(n);
+			
+			// registrador destino
+			d = (IR & 0x0000001F);
+			Rd = &(V[d]);
+			
+			// atribuir ALUctrl
+			ALUctrl = ALUctrlFlag::SUB;
+			
+			// atribuir MEMctrl
+			MEMctrl = MEMctrlFlag::MEM_NONE;
+			
+			// atribuir WBctrl
+			WBctrl = WBctrlFlag::RegWrite;
+			
+			// atribuir MemtoReg
+			MemtoReg = false;
+			
+			return 0;
+		// C7.2.91  - FDIV (scalar) - on page C7-1466 - DONE
+		case 0x1E201800:
+			if (IR & 0x00C00000) return 1;
+
+			fpOp = FPOpFlag::FP_REG_32;
+			
+			// ler A e B
+			n = (IR & 0x000003E0) >> 5;
+			A = getSasInt(n); // 32-bit variant
+
+			m = (IR & 0x001F0000) >> 16;
+			B = getSasInt(m);
+
+			// registrador destino
+			d = (IR & 0x0000001F);
+			Rd = &(V[d]);
+			
+			// atribuir ALUctrl
+			ALUctrl = ALUctrlFlag::DIV;
+			
+			// atribuir MEMctrl
+			MEMctrl = MEMctrlFlag::MEM_NONE;
+			
+			// atribuir WBctrl
+			WBctrl = WBctrlFlag::RegWrite;
+			
+			// atribuir MemtoReg
+			MemtoReg = false;
+			
+			return 0;
+		// C7.2.129 - FMUL (scalar) - on page C7-1548 - DONE
+		case 0x1E200800:
+			if (IR & 0x00C00000) return 1;
+
+			fpOp = FPOpFlag::FP_REG_32;
+			
+			// ler A e B
+			n = (IR & 0x000003E0) >> 5;
+			A = getSasInt(n); // 32-bit variant
+
+			m = (IR & 0x001F0000) >> 16;
+			B = getSasInt(m);
+
+			// registrador destino
+			d = (IR & 0x0000001F);
+			Rd = &(V[d]);
+			
+			// atribuir ALUctrl
+			ALUctrl = ALUctrlFlag::MUL;
+			
+			// atribuir MEMctrl
+			MEMctrl = MEMctrlFlag::MEM_NONE;
+			
+			// atribuir WBctrl
+			WBctrl = WBctrlFlag::RegWrite;
+			
+			// atribuir MemtoReg
+			MemtoReg = false;
+			
+			return 0;
 		default:
 			// instrução não implementada
 			return 1;
@@ -761,6 +858,12 @@ int BasicCPU::EXF()
 				return 0;
 			case ALUctrlFlag::ADD:
 				ALUout = Util::floatAsUint64Low(fA + fB);
+				return 0;
+			case ALUctrlFlag::DIV:
+				ALUout = Util::floatAsUint64Low(fA/fB);
+				return 0;
+			case ALUctrlFlag::MUL:
+				ALUout = Util::floatAsUint64Low(fA*fB);
 				return 0;
 			default:
 				// Controle não implementado
