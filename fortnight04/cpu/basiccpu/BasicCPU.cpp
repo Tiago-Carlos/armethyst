@@ -33,9 +33,19 @@
    ----------------------------------------------------------------------------
 */
 
+/* ----------------------------------------------------------------------------
+
+-- GABRIEL NATHAN ALMEIDA SILVA - 201811135
+-- JOBERT DUNGA DE PAULA COELHO - 201520769
+-- TIAGO DE OLIVEIRA CARLOS - 201820272
+
+-- Instrução apresentada: 
+		fmul s1, s1, s0 (linha 52 do arquivo fpops.S)
+   ----------------------------------------------------------------------------
+*/
+
 #include "BasicCPU.h"
 #include "Util.h"
-#include <iostream>
 
 BasicCPU::BasicCPU(Memory *memory) {
 	this->memory = memory;
