@@ -380,10 +380,11 @@ int BasicCPU::decodeBranches() {
 			return 0;	
 		// C6.2.207 - RET - C6-1053 TODO
 		case 0xD4000000:
-			// As flags estão corretas, agora só resta conseguir os valores corretos para A e B.
-			// Coloquei o valor direto para testar as próximas instruções
-			A=0x0000000000000040;
-			B=0x0000000000000000;
+			n = (IR & 0x000003E0) >> 5;
+			A = getX(n); // 64-bit variant
+
+			B = 0;
+			
 			ALUctrl = ALUctrlFlag::ADD;//adição
 			// atribuir MEMctrl
 			//estágio de acesso a memoria
