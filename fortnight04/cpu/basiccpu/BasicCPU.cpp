@@ -720,13 +720,13 @@ int BasicCPU::decodeDataProcFloat() {
 			ALUctrl = ALUctrlFlag::SUB;
 			
 			// atribuir MEMctrl
-			MEMctrl = MEMctrlFlag::MEM_NONE;
+			MEMctrl = MEMctrlFlag::MEM_NONE; //none pq nao acesso a memoria
 			
 			// atribuir WBctrl
-			WBctrl = WBctrlFlag::RegWrite;
+			WBctrl = WBctrlFlag::RegWrite; //onde eu vou escrever a informação, que é no registrador, por isso o "RegWrite"
 			
 			// atribuir MemtoReg
-			MemtoReg = false;
+			MemtoReg = false; // como a info não vem da memoria é falso
 			
 			return 0;
 		// C7.2.91  - FDIV (scalar) - on page C7-1466 - DONE
@@ -750,13 +750,13 @@ int BasicCPU::decodeDataProcFloat() {
 			ALUctrl = ALUctrlFlag::DIV;
 			
 			// atribuir MEMctrl
-			MEMctrl = MEMctrlFlag::MEM_NONE;
+			MEMctrl = MEMctrlFlag::MEM_NONE; //none pq nao acesso a memoria
 			
 			// atribuir WBctrl
-			WBctrl = WBctrlFlag::RegWrite;
+			WBctrl = WBctrlFlag::RegWrite; //onde eu vou escrever a informação, que é no registrador, por isso o "RegWrite"
 			
 			// atribuir MemtoReg
-			MemtoReg = false;
+			MemtoReg = false; // como a info não vem da memoria é falso
 			
 			return 0;
 		// C7.2.129 - FMUL (scalar) - on page C7-1548 - DONE
@@ -780,13 +780,13 @@ int BasicCPU::decodeDataProcFloat() {
 			ALUctrl = ALUctrlFlag::MUL;
 			
 			// atribuir MEMctrl
-			MEMctrl = MEMctrlFlag::MEM_NONE;
+			MEMctrl = MEMctrlFlag::MEM_NONE; //none pq nao acesso a memoria
 			
 			// atribuir WBctrl
-			WBctrl = WBctrlFlag::RegWrite;
+			WBctrl = WBctrlFlag::RegWrite; //onde eu vou escrever a informação, que é no registrador, por isso o "RegWrite"
 			
 			// atribuir MemtoReg
-			MemtoReg = false;
+			MemtoReg = false; // como a info não vem da memoria é falso
 			
 			return 0;
 		default:
